@@ -309,7 +309,7 @@ const view = (function (pubsub) {
     function editView (note, dates, ids) {
       body.classList.add("editting");
       textSpace.readOnly = false
-      editButton.textContent = "Save the changes!"
+      editButton.textContent = "Save the changes"
       cancelingButton.textContent = "Cancel."
       textSpace.value = note
       editButton.addEventListener("click", onEditButton, { once: true })
@@ -359,7 +359,7 @@ const view = (function (pubsub) {
     function readingView (ids, note, dates) {
       body.classList.add("view")
       textSpace.readOnly = true
-      editButton.textContent = "Go back!"
+      editButton.textContent = "Go back"
       textSpace.value = note
       const creationDate = dates.creation
       const lastMod = dates.modification
