@@ -96,7 +96,7 @@ const model = (function () {
         if (filter.note !== data[ids].note) {
           difNote = [true, data[ids].note]
           data[ids].note = filter.note
-          data[ids].lastMDate = filter.lastMDate.toString()
+          data[ids].lastMod = filter.lastMod.toString()
         }
       } else if ("data" in filter) {
         data = filter.data
@@ -113,12 +113,12 @@ const model = (function () {
       writeStoreItem("notes", data)
     }
 
-    class ModelNote {
+    class NotesInformation {
       constructor (note) {
         let d = Date.now()
         this.ids = d
-        this.createDate = d
-        this.lastMDate = d
+        this.creaDate = d
+        this.lastMod = d
         this.note = note
         this.active = true
         this.passFilter = true
@@ -126,10 +126,10 @@ const model = (function () {
     }
     function ModelFactory () { }
     ModelFactory.prototype.createNote = function (note) {
-      return new ModelNote(note)
+      return new NotesInformation(note)
     }
     const noteFactory = new ModelFactory()
-    const UNDO_ACTIONS = {
+    const UndoOptions = {
       updateNote ({ command, ids }) {
         updateNote(command.text, ids, true)
       },
@@ -158,7 +158,7 @@ const model = (function () {
         const reverseCommand = commands[lastIndex]
         delete commands[lastIndex]
         const ids = reverseCommand.ids || ""
-        const undoAction = UNDO_ACTIONS[reverseCommand.command]
+        const undoAction = UndoOptions[reverseCommand.command]
         if (undoAction) {
           undoAction({ command: reverseCommand, ids, data })
           updateData("-1", { commands: commands }, "commandsHistorial")
@@ -181,7 +181,7 @@ const model = (function () {
 
     function updateNote (note, ids, reversing = false) {
       if (note) {
-        const filter = { note, lastMDate: Date.now() }
+        const filter = { note, lastMod: Date.now() }
         const [dif, text] = updateData(ids, filter)
         if (!reversing) {
           if (dif) {
@@ -194,8 +194,8 @@ const model = (function () {
     function getDate (ids, opt) {
       const data = getData("notes", true)
       return opt === "creation"
-        ? data[ids].createDate
-        : data[ids].lastMDate
+        ? data[ids].creaDate
+        : data[ids].lastMod
     }
 
     function filterNotes (filter) {
@@ -253,7 +253,6 @@ const view = (function (pubsub) {
 
   function inicializate () {
     const body = document.body;
-    const activityTitle = document.querySelector(".activity")
     const datesInfo = document.querySelector(".infoDate")
     const textSpace = document.getElementById("textarea")
     const saveButton = document.querySelector(".savebtn")
@@ -275,9 +274,7 @@ const view = (function (pubsub) {
       savedNotes.addEventListener("click", clickOnNote)
       savedNotes.addEventListener("dragstart", draggingNote)
       savedNotes.addEventListener("dragend", dragEnds)
-      savedNotes.addEventListener("dragover", function (event) {
-        event.preventDefault()
-      })
+      savedNotes.addEventListener("dragover", function (event) {event.preventDefault()})
       savedNotes.addEventListener("drop", dropNote)
       textSpace.addEventListener("keydown", allowTabs)
       window.addEventListener("keydown", function (event) {
@@ -285,7 +282,6 @@ const view = (function (pubsub) {
           event.preventDefault()
         }
       })
-
       searchBox.addEventListener("keyup", notifyChange)
       saveButton.addEventListener("click", saveNote)
       undobtn.addEventListener("click", undoAction)
@@ -312,16 +308,15 @@ const view = (function (pubsub) {
 
     function editView (note, dates, ids) {
       body.classList.add("editting");
-      activityTitle.textContent = "Edit this note."
       textSpace.readOnly = false
       editButton.textContent = "Save the changes!"
       cancelingButton.textContent = "Cancel."
       textSpace.value = note
       editButton.addEventListener("click", onEditButton, { once: true })
       const creationDate = dates.creation
-      const lastMDate = dates.modification
+      const lastMod = dates.modification
       creationDP.textContent = `Creation date: ${new Date(creationDate)}.`
-      lastMDP.textContent = `Last modification: ${new Date (Number(lastMDate))}`
+      lastMDP.textContent = `Last modification: ${new Date (Number(lastMod))}`
       cancelingButton.addEventListener("click", onCancelButton, { once: true })
       function onCancelButton () {
         editButton.removeEventListener("click", onEditButton, { once: true })
@@ -336,7 +331,6 @@ const view = (function (pubsub) {
     function mainView (activeNotes) {
       body.classList.remove("editting");
       body.classList.remove("view");
-      activityTitle.textContent = "Create a note."
       textSpace.setAttribute("placeholder", "Write a note here.")
       textSpace.readOnly = false
       textSpace.value = ""
@@ -363,16 +357,15 @@ const view = (function (pubsub) {
     }
 
     function readingView (ids, note, dates) {
-      body.classList.add("view");
-      activityTitle.textContent = "Current note."
+      body.classList.add("view")
       textSpace.readOnly = true
       editButton.textContent = "Go back!"
       textSpace.value = note
       const creationDate = dates.creation
-      const lastMDate = dates.modification
+      const lastMod = dates.modification
       editButton.addEventListener("click", editNote(ids).saveEdition, { once: true })
       creationDP.textContent = `Creation date: ${new Date(creationDate)}.`
-      lastMDP.textContent = `Last modification: ${new Date(Number(lastMDate))}`
+      lastMDP.textContent = `Last modification: ${new Date(Number(lastMod))}`
     }
 
     function currentNote (ids, activeNotes) {
@@ -481,7 +474,7 @@ const presenter = (function (pubsub) {
 
   function inicializate () {
     let creationDate
-    let lastMDate
+    let lastMod
     pubsub.publish("getDataPresenter", this)
 
     function saveNote (note) {
@@ -503,7 +496,7 @@ const presenter = (function (pubsub) {
       pubsub.publish("getDatesPresenter", [this, ids])
       return {
         creation: this.creationDate,
-        modification: this.lastMDate
+        modification: this.lastMod
       }
     }
 
@@ -542,7 +535,7 @@ const presenter = (function (pubsub) {
         const p = info[0]
         const ids = info[1]
         p.creationDate = model.getDate(ids, "creation")
-        p.lastMDate = model.getDate(ids, "modification")
+        p.lastMod = model.getDate(ids, "modification")
       }
       pubsub.subscribe("getDatesPresenter", getDatesModelLogger)
 
