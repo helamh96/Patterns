@@ -1,6 +1,6 @@
 "use strict"
 
-const pubsub = {};
+const publiSub = {};
 (function (myObject) {
   const topics = {}
   let subUid = -1
@@ -42,7 +42,7 @@ const pubsub = {};
     }
     return this
   }
-}(pubsub))
+}(publiSub))
 
 //the Model
 const model = (function () {
@@ -248,7 +248,7 @@ const model = (function () {
 /*.....................................*/
 
 //the View
-const view = (function (pubsub) {
+const view = (function (publiSub) {
   let viewInstance
 
   function inicializate () {
@@ -267,7 +267,7 @@ const view = (function (pubsub) {
 
     function notifyChange () {
       const filter = searchBox.value
-      pubsub.publish("newText", filter)
+      publiSub.publish("newText", filter)
     };
 
     function start (activeNotes) {
@@ -295,13 +295,13 @@ const view = (function (pubsub) {
       const ids = clicked.getAttribute("data-ids")
       switch (clickedClass) {
         case "viewbtn":
-          pubsub.publish("viewClicked", ids)
+          publiSub.publish("viewClicked", ids)
           break
         case "editbtn":
-          pubsub.publish("editClicked", ids)
+          publiSub.publish("editClicked", ids)
           break
         case "delbtn":
-          pubsub.publish("deleteNote", ids)
+          publiSub.publish("deleteNote", ids)
           break
       }
     }
@@ -342,7 +342,7 @@ const view = (function (pubsub) {
     function editNote (ids, checkCancel = false) {
       return {
         saveEdition: () => {
-          pubsub.publish("saveEditClicked", [ids, checkCancel])
+          publiSub.publish("saveEditClicked", [ids, checkCancel])
         }
       }
     }
@@ -352,7 +352,7 @@ const view = (function (pubsub) {
         newNote = textSpace.value
       }
       activeNotes[ids].note = newNote
-      pubsub.publish("editNote", [newNote, ids])
+      publiSub.publish("editNote", [newNote, ids])
       mainView(activeNotes)
     }
 
@@ -411,7 +411,7 @@ const view = (function (pubsub) {
 
     function saveNote () {
       const note = textSpace.value
-      pubsub.publish("saveNote", note)
+      publiSub.publish("saveNote", note)
     }
 
     function allowTabs (event) {
@@ -436,7 +436,7 @@ const view = (function (pubsub) {
     function dropNote (event) {
       const startingPlace = draggedNote.getAttribute("data-ids")
       const endingPlace = event.target.getAttribute("data-ids")
-      pubsub.publish("interchangeNotes", [startingPlace, endingPlace])
+      publiSub.publish("interchangeNotes", [startingPlace, endingPlace])
     }
 
     function checkKeys (event) {
@@ -447,7 +447,7 @@ const view = (function (pubsub) {
 
     function undoAction () {
       if (undobtn.style.display !== "none") {
-        pubsub.publish("undoAction")
+        publiSub.publish("undoAction")
       }
     }
 
@@ -465,35 +465,35 @@ const view = (function (pubsub) {
       return viewInstance
     }
   }
-})(pubsub).getInstance()
+})(publiSub).getInstance()
 /*.....................................*/
 
 // Presenter
-const presenter = (function (pubsub) {
+const presenter = (function (publiSub) {
   let presenterInstance
 
   function inicializate () {
     let creationDate
     let lastMod
-    pubsub.publish("getDataPresenter", this)
+    publiSub.publish("getDataPresenter", this)
 
     function saveNote (note) {
-      pubsub.publish("saveNotePresenter", note)
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("saveNotePresenter", note)
+      publiSub.publish("getDataPresenter", this)
     }
 
     function editNote (note, ids) {
-      pubsub.publish("editNotePresenter", [note, ids])
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("editNotePresenter", [note, ids])
+      publiSub.publish("getDataPresenter", this)
     }
 
     function deleteNote (ids) {
-      pubsub.publish("deleteNotePresenter", ids)
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("deleteNotePresenter", ids)
+      publiSub.publish("getDataPresenter", this)
     }
 
     function dates (ids) {
-      pubsub.publish("getDatesPresenter", [this, ids])
+      publiSub.publish("getDatesPresenter", [this, ids])
       return {
         creation: this.creationDate,
         modification: this.lastMod
@@ -501,35 +501,35 @@ const presenter = (function (pubsub) {
     }
 
     function filterNotes (filter) {
-      pubsub.publish("filterNotesPresenter", filter)
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("filterNotesPresenter", filter)
+      publiSub.publish("getDataPresenter", this)
     }
 
     function interchangeNotes (startingPlace, endingPlace) {
-      pubsub.publish("interchageNotesP", [startingPlace, endingPlace])
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("interchageNotesP", [startingPlace, endingPlace])
+      publiSub.publish("getDataPresenter", this)
     }
 
     function undoAction () {
-      pubsub.publish("undoActionPresenter")
-      pubsub.publish("getDataPresenter", this)
+      publiSub.publish("undoActionPresenter")
+      publiSub.publish("getDataPresenter", this)
     }
 
     function start () {
       function undoActionModelLoger (topic) {
         model.undoAction()
       }
-      pubsub.subscribe("undoActionPresenter", undoActionModelLoger)
+      publiSub.subscribe("undoActionPresenter", undoActionModelLoger)
 
       function interchageNotesModelLogger (topic, info) {
         model.interchangeNotes(info[0], info[1])
       }
-      pubsub.subscribe("interchageNotesP", interchageNotesModelLogger)
+      publiSub.subscribe("interchageNotesP", interchageNotesModelLogger)
 
       function filterNotesModelLogger (topic, filter) {
         model.filterNotes(filter)
       }
-      pubsub.subscribe("filterNotesPresenter", filterNotesModelLogger)
+      publiSub.subscribe("filterNotesPresenter", filterNotesModelLogger)
 
       function getDatesModelLogger (topic, info) {
         const p = info[0]
@@ -537,67 +537,67 @@ const presenter = (function (pubsub) {
         p.creationDate = model.getDate(ids, "creation")
         p.lastMod = model.getDate(ids, "modification")
       }
-      pubsub.subscribe("getDatesPresenter", getDatesModelLogger)
+      publiSub.subscribe("getDatesPresenter", getDatesModelLogger)
 
       function deleteNoteModelL (topic, ids) {
         model.deleteNote(ids)
       }
-      pubsub.subscribe("deleteNotePresenter", deleteNoteModelL)
+      publiSub.subscribe("deleteNotePresenter", deleteNoteModelL)
 
       function editNoteModelL (topic, info) {
         model.updateNote(info[0], info[1])
       }
-      pubsub.subscribe("editNotePresenter", editNoteModelL)
+      publiSub.subscribe("editNotePresenter", editNoteModelL)
 
       function saveNoteModelL (topic, note) {
         model.saveNote(note)
       }
-      pubsub.subscribe("saveNotePresenter", saveNoteModelL)
+      publiSub.subscribe("saveNotePresenter", saveNoteModelL)
 
       function interchangeNotesLogger (topic, indexes) {
         presenter.interchangeNotes(indexes[0], indexes[1])
         const activeNotes = presenter.data
         view.main(activeNotes)
       };
-      pubsub.subscribe("interchangeNotes", interchangeNotesLogger)
+      publiSub.subscribe("interchangeNotes", interchangeNotesLogger)
 
       function textFilterLogger (topic, filter) {
         presenter.filterNotes(filter)
         const activeNotes = presenter.data
         view.main(activeNotes)
       }
-      pubsub.subscribe("newText", textFilterLogger)
+      publiSub.subscribe("newText", textFilterLogger)
 
       function deleteNoteLogger (topic, ids) {
         presenter.deleteNote(ids)
         const activeNotes = presenter.data
         view.main(activeNotes)
       }
-      pubsub.subscribe("deleteNote", deleteNoteLogger)
+      publiSub.subscribe("deleteNote", deleteNoteLogger)
 
       function editNoteLogger (topic, info) {
         presenter.editNote(info[0], info[1])
       }
-      pubsub.subscribe("editNote", editNoteLogger)
+      publiSub.subscribe("editNote", editNoteLogger)
 
       function saveNoteLogger (topic, note) {
         presenter.saveNote(note)
         const activeNotes = presenter.data
         view.main(activeNotes)
       }
-      pubsub.subscribe("saveNote", saveNoteLogger)
+      publiSub.subscribe("saveNote", saveNoteLogger)
 
       function undoActionLogger (topic) {
         presenter.undoAction()
         const activeNotes = presenter.data
         view.main(activeNotes)
       }
-      pubsub.subscribe("undoAction", undoActionLogger)
+      publiSub.subscribe("undoAction", undoActionLogger)
 
       function startAppLogger (topic, activeNotes) {
         view.start(activeNotes)
       }
-      pubsub.subscribe("startApp", startAppLogger)
+      publiSub.subscribe("startApp", startAppLogger)
 
       function editClickedLogger (topic, ids) {
         const dates = presenter.dates(ids)
@@ -605,7 +605,7 @@ const presenter = (function (pubsub) {
         const note = activeNotes[ids].note
         view.edit(note, dates, ids)
       }
-      pubsub.subscribe("editClicked", editClickedLogger)
+      publiSub.subscribe("editClicked", editClickedLogger)
 
       function saveEditClickedLogger (topic, info) {
         const ids = info[0]
@@ -614,7 +614,7 @@ const presenter = (function (pubsub) {
         const newNote = data[ids].note
         view.saveEdition(newNote, ids, data, checker)
       }
-      pubsub.subscribe("saveEditClicked", saveEditClickedLogger)
+      publiSub.subscribe("saveEditClicked", saveEditClickedLogger)
 
       function viewLogger (topic, ids) {
         const dates = presenter.dates(ids)
@@ -622,9 +622,9 @@ const presenter = (function (pubsub) {
         const note = activeNotes[ids].note
         view.view(ids, note, dates)
       }
-      pubsub.subscribe("viewClicked", viewLogger)
-      pubsub.publish("getDataPresenter", this)
-      pubsub.publish("startApp", this.data)
+      publiSub.subscribe("viewClicked", viewLogger)
+      publiSub.publish("getDataPresenter", this)
+      publiSub.publish("startApp", this.data)
     }
 
     return {
@@ -646,7 +646,7 @@ const presenter = (function (pubsub) {
       return presenterInstance
     }
   }
-})(pubsub).getInstance()
+})(publiSub).getInstance()
 /*.....................................*/
 
 
@@ -654,6 +654,6 @@ window.addEventListener("load", function () {
   function getDataModelLogger (topic, p) {
     p.data = model.getActiveNotes("notes", true)
   }
-  pubsub.subscribe("getDataPresenter", getDataModelLogger)
+  publiSub.subscribe("getDataPresenter", getDataModelLogger)
   presenter.start()
 })
