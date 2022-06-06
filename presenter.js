@@ -6,7 +6,7 @@ const getDP="getDataPresenter"
 const getDatesP="getDatesPresenter"
 const saveNoteP="saveNotePresenter"
 const undoActionP="undoActionPresenter"
-const InterchageNotesP="interchageNotesP"
+const interchangeNotesP="interchageNotesP"
 const editNoteP="editNotePresenter"
 const deleteNoteP="deleteNotePresenter"
 const filterNotesP="filterNotesPresenter"
@@ -68,7 +68,7 @@ function filterNotes (filter) {
 }
 
 function interchangeNotes (start, end) {
-  publiSub.publish(InterchageNotesP, [start, end])
+  publiSub.publish(interchangeNotesP, [start, end])
   publiSub.publish(getDP, this)
 }
 
@@ -88,7 +88,7 @@ function start () {
     let info=arguments[1]
     model.interchangeNotes(info[0], info[1])
   }
-  publiSub.subscribe(InterchageNotesP, interchageNotesModelLogger)
+  publiSub.subscribe(interchangeNotesP, interchageNotesModelLogger)
 
   function filterNotesModelLogger () {
     let filter=arguments[1]
