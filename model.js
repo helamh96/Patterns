@@ -3,15 +3,15 @@ export default function models () {
   return {
     getInstance: function () {
       if (!modelInstance) {
-        modelInstance = init()
+        modelInstance=init()
       }
       return modelInstance
     }
   }
 }
 
-const CH = "commandsHistorial"
-const notes = "notes"
+const CH="commandsHistorial"
+const notes="notes"
 
 function init () {
   return {
@@ -26,8 +26,8 @@ function init () {
   }
 }
 
-function readStoredItem (key, fallback = null) {
-  const str = localStorage.getItem(key) || fallback
+function readStoredItem (key, fallback=null) {
+  const str=localStorage.getItem(key) || fallback
   return JSON.parse(str)
 }
   
@@ -35,14 +35,14 @@ function writeStoreItem (key, value) {
   localStorage.setItem(key, JSON.stringify(value))
 }
 
-function getNotes(active = true){
+function getNotes(active=true){
     if(readStoredItem(notes)){
-      const data = readStoredItem(notes)
+      const data=readStoredItem(notes)
       if(active){
         return Object.keys(data)
           .reduce((activeNotes, ids) => {
             if (data[ids].active && data[ids].passFilter) {
-              activeNotes[ids] = data[ids]
+              activeNotes[ids]=data[ids]
             }
             return activeNotes
           }, {})
@@ -53,43 +53,43 @@ function getNotes(active = true){
 }
 
 function getCommandHistory(){
-  const data = readStoredItem(CH);
+  const data=readStoredItem(CH);
   return data;
 }
 
 function updatePrevConf (inverse) {
-  const commands = readStoredItem(CH, "{}")
-  const lastIndex = getLastIndex(commands)
-  commands[String(lastIndex + 1)] = inverse
+  const commands=readStoredItem(CH, "{}")
+  const lastIndex=getLastIndex(commands)
+  commands[String(lastIndex + 1)]=inverse
   writeStoreItem(CH, commands)
 }
 
 function saveNoteDataBase (obj) {
-  const data = readStoredItem(notes, "{}")
-  const ids = obj.ids
+  const data=readStoredItem(notes, "{}")
+  const ids=obj.ids
   delete obj.ids
-  data[ids] = obj
+  data[ids]=obj
   writeStoreItem(notes, data)
 }
 
-function updateData (ids, filter, indx = notes) {
+function updateData (ids, filter, indx=notes) {
   if (indx === CH) {
     writeStoreItem(CH, filter.commands)
     return
   }
-  let data = readStoredItem(notes)
-  let difNote = [false, ""]
+  let data=readStoredItem(notes)
+  let difNote=[false, ""]
   if ("note" in filter) {
     if (filter.note !== data[ids].note) {
-      difNote = [true, data[ids].note]
-      data[ids].note = filter.note
-      data[ids].lastMod = filter.lastMod.toString()
+      difNote=[true, data[ids].note]
+      data[ids].note=filter.note
+      data[ids].lastMod=filter.lastMod.toString()
     }
   } else if ("data" in filter) {
-    data = filter.data
+    data=filter.data
   } else {
     for (const key in filter) {
-      data[ids][key] = filter[key]
+      data[ids][key]=filter[key]
     }
   }
   writeStoreItem(notes, data)
@@ -102,29 +102,29 @@ function updateNotes (data) {
 
 class NotesInformation {
   constructor (note) {
-    const d = Date.now()
-    this.ids = d
-    this.creaDate = d
-    this.lastMod = d
-    this.note = note
-    this.active = true
-    this.passFilter = true
+    const d=Date.now()
+    this.ids=d
+    this.creaDate=d
+    this.lastMod=d
+    this.note=note
+    this.active=true
+    this.passFilter=true
   }
 }
 function ModelFactory () {}
 
-ModelFactory.prototype.createNote = function (note) {
+ModelFactory.prototype.createNote=function (note) {
   return new NotesInformation(note)
 }
 
-const noteFactory = new ModelFactory()
+const noteFactory=new ModelFactory()
 
-const UndoOptions = {
+const UndoOptions={
   updateNote ({ command, ids }) {
     updateNote(command.text, ids, true)
   },
   saveNote ({ data }) {
-    const lastIndex = getLastIndex(data)
+    const lastIndex=getLastIndex(data)
     delete data[lastIndex]
     updateData("-1", { data }, notes)
   },
@@ -137,18 +137,18 @@ const UndoOptions = {
 }
 
 function undoAction () {
-  const commands = getCommandHistory()
-  const data = getNotes (false)
-  const lastIndex = getLastIndex(commands)
+  const commands=getCommandHistory()
+  const data=getNotes (false)
+  const lastIndex=getLastIndex(commands)
 
   if (!data) {
     return
   }
   else if (lastIndex in commands) {
-    const reverseCommand = commands[lastIndex]
+    const reverseCommand=commands[lastIndex]
     delete commands[lastIndex]
-    const ids = reverseCommand.ids || ""
-    const undoAction = UndoOptions[reverseCommand.command]
+    const ids=reverseCommand.ids || ""
+    const undoAction=UndoOptions[reverseCommand.command]
     if (undoAction) {
       undoAction({ command: reverseCommand, ids, data })
       updateData("-1", { commands: commands }, CH)
@@ -162,17 +162,17 @@ function deleteNote (ids) {
 }
 
 function saveNote (note) {
-  const obj = noteFactory.createNote(note)
+  const obj=noteFactory.createNote(note)
   if (obj.note !== "") {
     saveNoteDataBase(obj)
     updatePrevConf({ command: "saveNote" })
   }
 }
 
-function updateNote (note, ids, reversing = false) {
+function updateNote (note, ids, reversing=false) {
   if (note) {
-    const filter = { note, lastMod: Date.now() }
-    const [dif, text] = updateData(ids, filter)
+    const filter={ note, lastMod: Date.now() }
+    const [dif, text]=updateData(ids, filter)
     if (!reversing) {
       if (dif) {
         updatePrevConf({ ids, command: "updateNote", text })
@@ -182,25 +182,25 @@ function updateNote (note, ids, reversing = false) {
 }
 
 function getDate (ids, opt) {
-  const data = getNotes(true)
+  const data=getNotes(true)
   return opt === "creation"
     ? data[ids].creaDate
     : data[ids].lastMod
 }
 
 function filterNotes (filter) {
-  const notes = getNotes(false)
+  const notes=getNotes(false)
   for (const n of Object.values(notes)) {
-    n.passFilter = n.note.includes(filter)
+    n.passFilter=n.note.includes(filter)
   }
   updateNotes(notes)
 }
 
-function interchangeNotes (start, end, reversing = false) {
-  const data = getNotes(false)
-  const keepingNote = data[start]
-  data[start] = data[end]
-  data[end] = keepingNote
+function interchangeNotes (start, end, reversing=false) {
+  const data=getNotes(false)
+  const keepingNote=data[start]
+  data[start]=data[end]
+  data[end]=keepingNote
   if (!reversing) {
     updatePrevConf({
       command: "interchange",
@@ -212,7 +212,7 @@ function interchangeNotes (start, end, reversing = false) {
 }
 
 function getLastIndex (obj) {
-  const indices = Object.keys(obj).map(num => parseInt(num, 10))
-  const lastIndex = indices.length > 0 ? Math.max(...indices) : 0
+  const indices=Object.keys(obj).map(num => parseInt(num, 10))
+  const lastIndex=indices.length > 0 ? Math.max(...indices) : 0
   return lastIndex
 }
